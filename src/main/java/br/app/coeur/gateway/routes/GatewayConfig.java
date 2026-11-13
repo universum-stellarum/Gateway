@@ -1,4 +1,4 @@
-package br.app.coeur.gateway.config;
+package br.app.coeur.gateway.routes;
 
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
