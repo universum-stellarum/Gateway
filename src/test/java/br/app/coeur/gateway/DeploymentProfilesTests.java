@@ -9,8 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class DeploymentProfilesTests {
     @Test
-    void eachProfileSelectsItsIssuerAndUsesThePrivateServiceName() {
-        Map.of("dev", "https://development.coeur.app.br", "prod", "https://production.coeur.app.br")
+    void productionIsTheDefaultAndDevOverridesItsIssuer() {
+        Map.of("", "https://production.coeur.app.br",
+                        "prod", "https://production.coeur.app.br",
+                        "dev", "https://development.coeur.app.br")
                 .forEach((profile, issuer) -> new ApplicationContextRunner()
                         .withPropertyValues("spring.profiles.active=" + profile)
                         .withInitializer(new ConfigDataApplicationContextInitializer())
