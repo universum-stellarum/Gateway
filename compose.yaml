@@ -1,0 +1,38 @@
+name: universum-polaris-${APP_ENV:?Defina APP_ENV como dev ou prod}
+
+services:
+  polaris:
+    build: .
+    restart: unless-stopped
+    init: true
+    environment:
+      SPRING_PROFILES_ACTIVE: ${APP_ENV:?Defina APP_ENV como dev ou prod}
+      SERVER_PORT: "8080"
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?Defina as origens do frontend}
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75.0
+    # Internal port only. Dokploy/Traefik handles the public domains and HTTPS.
+    expose:
+      - "8080"
+    networks:
+      - services
+      - ingress
+    labels:
+      traefik.docker.network: dokploy-network
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 512m
+
+networks:
+  # Create universum-dev and universum-prod once on the server. Each independent service
+  # joins its environment's network; Antares must register the alias "antares".
+  services:
+    external: true
+    name: universum-${APP_ENV:?Defina APP_ENV como dev ou prod}
+  ingress:
+    external: true
+    name: dokploy-network
