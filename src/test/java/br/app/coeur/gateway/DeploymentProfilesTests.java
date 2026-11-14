@@ -1,0 +1,27 @@
+package br.app.coeur.gateway;
+
+import java.util.Map;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class DeploymentProfilesTests {
+    @Test
+    void eachProfileSelectsItsIssuerAndUsesThePrivateServiceName() {
+        Map.of("dev", "https://development.coeur.app.br", "prod", "https://production.coeur.app.br")
+                .forEach((profile, issuer) -> new ApplicationContextRunner()
+                        .withPropertyValues("spring.profiles.active=" + profile)
+                        .withInitializer(new ConfigDataApplicationContextInitializer())
+                        .run(context -> {
+                            var environment = context.getEnvironment();
+                            assertThat(environment.getProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri"))
+                                    .isEqualTo(issuer);
+                            assertThat(environment.getProperty("gateway.services.identity-url"))
+                                    .isEqualTo("http://antares:8080");
+                            assertThat(environment.getProperty("spring.security.oauth2.resourceserver.jwt.jwk-set-uri"))
+                                    .isEqualTo("http://antares:8080/.well-known/jwks.json");
+                        }));
+    }
+}
