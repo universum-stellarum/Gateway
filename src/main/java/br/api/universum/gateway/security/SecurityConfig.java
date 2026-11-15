@@ -1,4 +1,4 @@
-package br.app.coeur.gateway.security;
+package br.api.universum.gateway.security;
 
 import java.util.List;
 

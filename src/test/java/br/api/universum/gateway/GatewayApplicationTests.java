@@ -1,4 +1,4 @@
-package br.app.coeur.gateway;
+package br.api.universum.gateway;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;

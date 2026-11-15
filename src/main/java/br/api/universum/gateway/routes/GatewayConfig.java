@@ -1,4 +1,4 @@
-package br.app.coeur.gateway.routes;
+package br.api.universum.gateway.routes;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.route.RouteLocator;

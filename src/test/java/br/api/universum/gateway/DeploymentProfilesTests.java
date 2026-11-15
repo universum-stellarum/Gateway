@@ -1,4 +1,4 @@
-package br.app.coeur.gateway;
+package br.api.universum.gateway;
 
 import java.util.Map;
 import org.junit.jupiter.api.Test;

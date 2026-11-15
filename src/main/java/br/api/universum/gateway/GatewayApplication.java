@@ -1,4 +1,4 @@
-package br.app.coeur.gateway;
+package br.api.universum.gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
