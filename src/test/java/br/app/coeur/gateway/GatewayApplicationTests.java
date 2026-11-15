@@ -31,7 +31,11 @@ import reactor.netty.http.server.HttpServer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+        "SERVER_PORT=0",
+        "AUTH_PUBLIC_POST_PATHS=/api/v1/auth/login,/api/v1/auth/refresh,/api/v1/auth/logout",
+        "CORS_ALLOWED_ORIGINS=https://development.coeur.app.br"
+})
 @ActiveProfiles("dev")
 class GatewayApplicationTests {
     private static final RSAKey SIGNING_KEY = key();
@@ -44,9 +48,8 @@ class GatewayApplicationTests {
 
     @DynamicPropertySource
     static void services(DynamicPropertyRegistry properties) {
-        properties.add("gateway.services.identity-url", () -> "http://localhost:" + IDENTITY.port());
-        properties.add("spring.security.oauth2.resourceserver.jwt.issuer-uri", () -> "https://development.coeur.app.br");
-        properties.add("spring.security.oauth2.resourceserver.jwt.jwk-set-uri",
+        properties.add("IDENTITY_URL", () -> "http://localhost:" + IDENTITY.port());
+        properties.add("JWT_JWK_SET_URI",
                 () -> "http://localhost:" + IDENTITY.port() + "/.well-known/jwks.json");
     }
 

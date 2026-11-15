@@ -14,7 +14,13 @@ class DeploymentProfilesTests {
                         "prod", "https://production.coeur.app.br",
                         "dev", "https://development.coeur.app.br")
                 .forEach((profile, issuer) -> new ApplicationContextRunner()
-                        .withPropertyValues("spring.profiles.active=" + profile)
+                        .withPropertyValues(
+                                "spring.profiles.active=" + profile,
+                                "SERVER_PORT=8080",
+                                "IDENTITY_URL=http://antares:8080",
+                                "JWT_JWK_SET_URI=http://antares:8080/.well-known/jwks.json",
+                                "AUTH_PUBLIC_POST_PATHS=/api/v1/auth/login,/api/v1/auth/refresh,/api/v1/auth/logout",
+                                "CORS_ALLOWED_ORIGINS=" + issuer)
                         .withInitializer(new ConfigDataApplicationContextInitializer())
                         .run(context -> {
                             var environment = context.getEnvironment();
