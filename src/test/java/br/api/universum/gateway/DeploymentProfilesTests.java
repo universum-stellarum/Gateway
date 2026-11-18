@@ -26,7 +26,7 @@ class DeploymentProfilesTests {
                                 .isEqualTo("http://identity:8080/.well-known/jwks.json");
                         assertThat(environment.getProperty("gateway.cors.allowed-origins")).isEqualTo(issuer);
                         assertThat(environment.getProperty("gateway.security.public-post-paths"))
-                                .isEqualTo("/api/v1/auth/login,/api/v1/auth/refresh,/api/v1/auth/logout");
+                                .isEqualTo("/identity/api/v1/auth/login,/identity/api/v1/auth/refresh,/identity/api/v1/auth/logout");
                         assertThat(environment.getProperty("spring.cloud.gateway.server.webflux.httpclient.connect-timeout"))
                                 .isEqualTo("3000");
                         assertThat(environment.getProperty("spring.cloud.gateway.server.webflux.httpclient.response-timeout"))

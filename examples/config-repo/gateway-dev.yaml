@@ -19,8 +19,11 @@ spring:
 gateway:
   services:
     identity-url: http://identity:8080
+    storage-url: http://storage:8080
+    notification-url: http://notification:8080
+    finance-url: http://finance:8080
   security:
-    public-post-paths: /api/v1/auth/login,/api/v1/auth/refresh,/api/v1/auth/logout
+    public-post-paths: /identity/api/v1/auth/login,/identity/api/v1/auth/refresh,/identity/api/v1/auth/logout
     jwt-audience: universum-api
   cors:
     allowed-origins: https://development.coeur.app.br

@@ -67,15 +67,15 @@ class GatewayApplicationTests {
             String body = endpoint.equals("login")
                     ? "{\"email\":\"user@coeur.app\",\"password\":\"secret\"}"
                     : "{\"refreshToken\":\"refresh-value\"}";
-            client.post().uri("/api/v1/auth/" + endpoint)
+            client.post().uri("/identity/api/v1/auth/" + endpoint)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer expired-access-token")
                     .contentType(MediaType.APPLICATION_JSON).bodyValue(body)
                     .exchange().expectStatus().isOk()
                     .expectBody().jsonPath("$.upstream").isEqualTo("identity")
                     .jsonPath("$.body").isEqualTo(body)
-                    .jsonPath("$.path").isEqualTo("/api/v1/auth/" + endpoint);
+                    .jsonPath("$.path").isEqualTo("/identity/api/v1/auth/" + endpoint);
         }
-        client.post().uri("/api/v1/auth/logout")
+        client.post().uri("/identity/api/v1/auth/logout")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer expired-access-token")
                 .contentType(MediaType.APPLICATION_JSON).bodyValue("{\"refreshToken\":\"refresh-value\"}")
                 .exchange().expectStatus().isNoContent();
@@ -84,18 +84,18 @@ class GatewayApplicationTests {
     @Test
     void protectedRoutesRejectMissingExpiredTamperedAndWrongIssuerTokensBeforeProxying() throws Exception {
         int before = IDENTITY_REQUESTS.get();
-        client.get().uri("/api/v1/users/me").exchange().expectStatus().isUnauthorized();
+        client.get().uri("/identity/api/v1/users/me").exchange().expectStatus().isUnauthorized();
         for (String invalid : new String[]{
                 token("https://development.coeur.app.br", Instant.now().minusSeconds(3600), SIGNING_KEY),
                 token("https://production.coeur.app.br", Instant.now().plusSeconds(900), SIGNING_KEY),
                 token("https://development.coeur.app.br", Instant.now().plusSeconds(900), key()),
                 UUID.randomUUID().toString()}) {
-            client.get().uri("/api/v1/users/me").headers(headers -> headers.setBearerAuth(invalid))
+            client.get().uri("/identity/api/v1/users/me").headers(headers -> headers.setBearerAuth(invalid))
                     .exchange().expectStatus().isUnauthorized();
         }
-        client.post().uri("/api/v1/users/register").exchange().expectStatus().isUnauthorized();
-        client.post().uri("/api/v1/auth/keys").exchange().expectStatus().isUnauthorized();
-        client.get().uri("/api/v1/auth/login").exchange().expectStatus().isUnauthorized();
+        client.post().uri("/identity/api/v1/users/register").exchange().expectStatus().isUnauthorized();
+        client.post().uri("/identity/api/v1/auth/keys").exchange().expectStatus().isUnauthorized();
+        client.get().uri("/identity/api/v1/auth/login").exchange().expectStatus().isUnauthorized();
         assertThat(IDENTITY_REQUESTS.get()).isEqualTo(before);
     }
 
@@ -103,7 +103,7 @@ class GatewayApplicationTests {
     void jwtIssuedForAnotherAudienceIsRejectedBeforeProxying() throws Exception {
         int before = IDENTITY_REQUESTS.get();
         String otherAudience = tokenForAudience("another-api", Instant.now().plusSeconds(900), SIGNING_KEY);
-        client.get().uri("/api/v1/users/me")
+        client.get().uri("/identity/api/v1/users/me")
                 .headers(headers -> headers.setBearerAuth(otherAudience))
                 .exchange().expectStatus().isUnauthorized();
         assertThat(IDENTITY_REQUESTS.get()).isEqualTo(before);
@@ -112,11 +112,11 @@ class GatewayApplicationTests {
     @Test
     void validJwtIsVerifiedThroughJwksAndForwardedUnchangedToTheCorrectService() throws Exception {
         String accessToken = token("https://development.coeur.app.br", Instant.now().plusSeconds(900), SIGNING_KEY);
-        client.get().uri("/api/v1/users/me?include=profile")
+        client.get().uri("/identity/api/v1/users/me?include=profile")
                 .headers(headers -> headers.setBearerAuth(accessToken))
                 .exchange().expectStatus().isOk()
                 .expectBody().jsonPath("$.upstream").isEqualTo("identity")
-                .jsonPath("$.path").isEqualTo("/api/v1/users/me?include=profile")
+                .jsonPath("$.path").isEqualTo("/identity/api/v1/users/me?include=profile")
                 .jsonPath("$.authorization").isEqualTo("Bearer " + accessToken);
         // Business APIs will be added as independent services with their own routes.
         int before = IDENTITY_REQUESTS.get();
@@ -127,18 +127,18 @@ class GatewayApplicationTests {
 
     @Test
     void corsAllowsConfiguredOriginAndAuthorizationHeaderWithoutDuplicateResponseHeaders() throws Exception {
-        client.options().uri("/api/v1/auth/refresh")
+        client.options().uri("/identity/api/v1/auth/refresh")
                 .header(HttpHeaders.ORIGIN, "https://development.coeur.app.br")
                 .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")
                 .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "authorization,content-type")
                 .exchange().expectStatus().isOk()
                 .expectHeader().valueEquals(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://development.coeur.app.br");
-        client.options().uri("/api/v1/users/me")
+        client.options().uri("/identity/api/v1/users/me")
                 .header(HttpHeaders.ORIGIN, "https://untrusted.example")
                 .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")
                 .exchange().expectStatus().isForbidden();
         String accessToken = token("https://development.coeur.app.br", Instant.now().plusSeconds(900), SIGNING_KEY);
-        client.get().uri("/api/v1/users/me")
+        client.get().uri("/identity/api/v1/users/me")
                 .headers(headers -> headers.setBearerAuth(accessToken))
                 .header(HttpHeaders.ORIGIN, "https://development.coeur.app.br")
                 .exchange().expectStatus().isOk()
@@ -159,7 +159,7 @@ class GatewayApplicationTests {
     @Test
     void serviceErrorStatusAndBodyArePreserved() throws Exception {
         String accessToken = token("https://development.coeur.app.br", Instant.now().plusSeconds(900), SIGNING_KEY);
-        client.get().uri("/api/v1/auth/failure").headers(headers -> headers.setBearerAuth(accessToken))
+        client.get().uri("/identity/api/v1/auth/failure").headers(headers -> headers.setBearerAuth(accessToken))
                 .exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.detail").isEqualTo("Invalid refresh token.");
     }
 
@@ -197,10 +197,10 @@ class GatewayApplicationTests {
                         .sendString(Mono.just(new JWKSet(SIGNING_KEY.toPublicJWK()).toString()));
             }
             requests.incrementAndGet();
-            if (request.uri().equals("/api/v1/auth/logout")) {
+            if (request.uri().equals("/identity/api/v1/auth/logout")) {
                 return response.status(204).send();
             }
-            if (request.uri().equals("/api/v1/auth/failure")) {
+            if (request.uri().equals("/identity/api/v1/auth/failure")) {
                 return response.status(400).header("Content-Type", "application/problem+json")
                         .sendString(Mono.just("{\"detail\":\"Invalid refresh token.\"}"));
             }
