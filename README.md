@@ -1,5 +1,10 @@
 ﻿# Polaris
 
+> **Polaris**, a Estrela Polar, fica quase exatamente sobre o polo celeste norte, por isso
+> parece quase parada enquanto o resto do céu gira ao seu redor. Navegadores a usam como
+> referência de norte há séculos. Está a cerca de 430 anos-luz da Terra e é uma estrela
+> pulsante do tipo Cefeida, cujo brilho varia pouco e de forma regular.
+
 Gateway da API Universum, com Java 21 e Spring Cloud Gateway. Encaminha autenticação e
 usuários ao Antares e valida os access tokens JWT pelas chaves públicas do serviço.
 
