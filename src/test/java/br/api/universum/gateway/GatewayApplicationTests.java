@@ -100,6 +100,16 @@ class GatewayApplicationTests {
     }
 
     @Test
+    void jwtIssuedForAnotherAudienceIsRejectedBeforeProxying() throws Exception {
+        int before = IDENTITY_REQUESTS.get();
+        String otherAudience = tokenForAudience("another-api", Instant.now().plusSeconds(900), SIGNING_KEY);
+        client.get().uri("/api/v1/users/me")
+                .headers(headers -> headers.setBearerAuth(otherAudience))
+                .exchange().expectStatus().isUnauthorized();
+        assertThat(IDENTITY_REQUESTS.get()).isEqualTo(before);
+    }
+
+    @Test
     void validJwtIsVerifiedThroughJwksAndForwardedUnchangedToTheCorrectService() throws Exception {
         String accessToken = token("https://development.coeur.app.br", Instant.now().plusSeconds(900), SIGNING_KEY);
         client.get().uri("/api/v1/users/me?include=profile")
@@ -161,9 +171,19 @@ class GatewayApplicationTests {
         }
     }
 
+    private static String tokenForAudience(String audience, Instant expiresAt, RSAKey key) throws Exception {
+        var jwt = new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(key.getKeyID()).build(),
+                new JWTClaimsSet.Builder().issuer("https://development.coeur.app.br").audience(audience)
+                        .subject(UUID.randomUUID().toString())
+                        .issueTime(Date.from(Instant.now().minusSeconds(7200)))
+                        .expirationTime(Date.from(expiresAt)).build());
+        jwt.sign(new RSASSASigner(key));
+        return jwt.serialize();
+    }
+
     private static String token(String issuer, Instant expiresAt, RSAKey key) throws Exception {
         var jwt = new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(key.getKeyID()).build(),
-                new JWTClaimsSet.Builder().issuer(issuer).subject(UUID.randomUUID().toString())
+                new JWTClaimsSet.Builder().issuer(issuer).audience("universum-api").subject(UUID.randomUUID().toString())
                         .issueTime(Date.from(Instant.now().minusSeconds(7200)))
                         .expirationTime(Date.from(expiresAt)).build());
         jwt.sign(new RSASSASigner(key));
