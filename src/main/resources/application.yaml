@@ -1,29 +1,12 @@
-server:
-  port: ${SERVER_PORT}
-
 spring:
   application:
-    name: universum-polaris
+    name: polaris
+  profiles:
+    active: ${APP_ENV}
   config:
-    import: optional:file:.env[.properties]
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: https://production.coeur.app.br
-          jwk-set-uri: ${JWT_JWK_SET_URI}
+    import:
+      - "optional:file:./.env[.properties]"
+      - "configserver:${CONFIG_SERVER_URL}"
   cloud:
-    gateway:
-      server:
-        webflux:
-          httpclient:
-            connect-timeout: 3000
-            response-timeout: 10s
-
-gateway:
-  services:
-    identity-url: ${IDENTITY_URL}
-  security:
-    public-post-paths: ${AUTH_PUBLIC_POST_PATHS}
-  cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+    config:
+      profile: ${spring.profiles.active}

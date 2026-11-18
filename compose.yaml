@@ -6,15 +6,11 @@ services:
     restart: unless-stopped
     init: true
     environment:
-      SPRING_PROFILES_ACTIVE: ${APP_ENV:?Defina APP_ENV como dev ou prod}
-      SERVER_PORT: ${SERVER_PORT:?Defina a porta interna do Polaris}
-      IDENTITY_URL: ${IDENTITY_URL:?Defina a URL interna do Antares}
-      JWT_JWK_SET_URI: ${JWT_JWK_SET_URI:?Defina a URL das chaves publicas do Antares}
-      AUTH_PUBLIC_POST_PATHS: ${AUTH_PUBLIC_POST_PATHS:?Defina os endpoints publicos de autenticacao}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?Defina as origens do frontend}
+      APP_ENV: ${APP_ENV:?Defina APP_ENV como dev ou prod}
+      CONFIG_SERVER_URL: ${CONFIG_SERVER_URL:?Defina a URL base do Config Server}
     # Internal port only. Dokploy/Traefik handles the public domains and HTTPS.
     expose:
-      - "${SERVER_PORT:?Defina a porta interna do Polaris}"
+      - "8080"
     networks:
       - services
     read_only: true

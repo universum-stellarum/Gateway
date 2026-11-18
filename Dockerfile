@@ -18,5 +18,5 @@ COPY --from=build --chown=10001:10001 /workspace/target/*.jar /app/app.jar
 USER 10001:10001
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-    CMD curl --fail --silent "http://127.0.0.1:${SERVER_PORT}/actuator/health" || exit 1
+    CMD curl --fail --silent http://127.0.0.1:8080/actuator/health || exit 1
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

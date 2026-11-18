@@ -9,27 +9,51 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class DeploymentProfilesTests {
     @Test
-    void productionIsTheDefaultAndDevOverridesItsIssuer() {
-        Map.of("", "https://production.coeur.app.br",
-                        "prod", "https://production.coeur.app.br",
-                        "dev", "https://development.coeur.app.br")
-                .forEach((profile, issuer) -> new ApplicationContextRunner()
-                        .withPropertyValues(
-                                "spring.profiles.active=" + profile,
-                                "SERVER_PORT=8080",
-                                "IDENTITY_URL=http://antares:8080",
-                                "JWT_JWK_SET_URI=http://antares:8080/.well-known/jwks.json",
-                                "AUTH_PUBLIC_POST_PATHS=/api/v1/auth/login,/api/v1/auth/refresh,/api/v1/auth/logout",
-                                "CORS_ALLOWED_ORIGINS=" + issuer)
-                        .withInitializer(new ConfigDataApplicationContextInitializer())
-                        .run(context -> {
-                            var environment = context.getEnvironment();
-                            assertThat(environment.getProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri"))
-                                    .isEqualTo(issuer);
-                            assertThat(environment.getProperty("gateway.services.identity-url"))
-                                    .isEqualTo("http://antares:8080");
-                            assertThat(environment.getProperty("spring.security.oauth2.resourceserver.jwt.jwk-set-uri"))
-                                    .isEqualTo("http://antares:8080/.well-known/jwks.json");
-                        }));
+    void loadsEachEnvironmentFromConfigServer() throws Exception {
+        try (var server = new ConfigServerFixture()) {
+            Map.of("prod", "https://production.coeur.app.br", "dev", "https://development.coeur.app.br")
+                    .forEach((profile, issuer) -> runner(profile, server.url()).run(context -> {
+                        assertThat(context).hasNotFailed();
+                        var environment = context.getEnvironment();
+                        assertThat(environment.getActiveProfiles()).containsExactly(profile);
+                        assertThat(environment.getProperty("spring.application.name")).isEqualTo("polaris");
+                        assertThat(environment.getProperty("server.port")).isEqualTo("8080");
+                        assertThat(environment.getProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri"))
+                                .isEqualTo(issuer);
+                        assertThat(environment.getProperty("gateway.services.identity-url"))
+                                .isEqualTo("http://antares:8080");
+                        assertThat(environment.getProperty("spring.security.oauth2.resourceserver.jwt.jwk-set-uri"))
+                                .isEqualTo("http://antares:8080/.well-known/jwks.json");
+                        assertThat(environment.getProperty("gateway.cors.allowed-origins")).isEqualTo(issuer);
+                        assertThat(environment.getProperty("gateway.security.public-post-paths"))
+                                .isEqualTo("/api/v1/auth/login,/api/v1/auth/refresh,/api/v1/auth/logout");
+                        assertThat(environment.getProperty("spring.cloud.gateway.server.webflux.httpclient.connect-timeout"))
+                                .isEqualTo("3000");
+                        assertThat(environment.getProperty("spring.cloud.gateway.server.webflux.httpclient.response-timeout"))
+                                .isEqualTo("10s");
+                    }));
+            assertThat(server.requests()).contains("/polaris/dev", "/polaris/prod");
+            assertThat(server.requests()).allMatch(path -> path.startsWith("/polaris/"));
+        }
+    }
+
+    @Test
+    void refusesToStartWhenConfigServerIsUnavailable() throws Exception {
+        String url;
+        try (var server = new ConfigServerFixture()) {
+            url = server.url();
+        }
+        for (String profile : new String[]{"dev", "prod"}) {
+            runner(profile, url).run(context -> {
+                assertThat(context).hasFailed();
+                assertThat(context.getStartupFailure()).hasMessageContaining("Could not locate PropertySource");
+            });
+        }
+    }
+
+    private ApplicationContextRunner runner(String profile, String configServerUrl) {
+        return new ApplicationContextRunner()
+                .withPropertyValues("APP_ENV=" + profile, "CONFIG_SERVER_URL=" + configServerUrl)
+                .withInitializer(new ConfigDataApplicationContextInitializer());
     }
 }
