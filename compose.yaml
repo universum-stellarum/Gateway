@@ -1,4 +1,4 @@
-name: universum-polaris-${APP_ENV:?Defina APP_ENV como dev ou prod}
+name: universum-polaris-${APP_ENV}
 
 services:
   polaris:
@@ -6,8 +6,8 @@ services:
     restart: unless-stopped
     init: true
     environment:
-      APP_ENV: ${APP_ENV:?Defina APP_ENV como dev ou prod}
-      CONFIG_SERVER_URL: ${CONFIG_SERVER_URL:?Defina a URL base do Config Server}
+      APP_ENV: ${APP_ENV}
+      CONFIG_SERVER_URL: ${CONFIG_SERVER_URL}
     # Internal port only. Dokploy/Traefik handles the public domains and HTTPS.
     expose:
       - "8080"
@@ -26,4 +26,4 @@ networks:
   # joins its environment's network; Antares must register the alias "antares".
   services:
     external: true
-    name: universum-${APP_ENV:?Defina APP_ENV como dev ou prod}
+    name: universum-${APP_ENV}
