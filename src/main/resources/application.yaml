@@ -1,6 +1,6 @@
 spring:
   application:
-    name: polaris
+    name: gateway
   profiles:
     active: ${APP_ENV}
   config:

@@ -16,14 +16,14 @@ class DeploymentProfilesTests {
                         assertThat(context).hasNotFailed();
                         var environment = context.getEnvironment();
                         assertThat(environment.getActiveProfiles()).containsExactly(profile);
-                        assertThat(environment.getProperty("spring.application.name")).isEqualTo("polaris");
+                        assertThat(environment.getProperty("spring.application.name")).isEqualTo("gateway");
                         assertThat(environment.getProperty("server.port")).isEqualTo("8080");
                         assertThat(environment.getProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri"))
                                 .isEqualTo(issuer);
                         assertThat(environment.getProperty("gateway.services.identity-url"))
-                                .isEqualTo("http://antares:8080");
+                                .isEqualTo("http://identity:8080");
                         assertThat(environment.getProperty("spring.security.oauth2.resourceserver.jwt.jwk-set-uri"))
-                                .isEqualTo("http://antares:8080/.well-known/jwks.json");
+                                .isEqualTo("http://identity:8080/.well-known/jwks.json");
                         assertThat(environment.getProperty("gateway.cors.allowed-origins")).isEqualTo(issuer);
                         assertThat(environment.getProperty("gateway.security.public-post-paths"))
                                 .isEqualTo("/api/v1/auth/login,/api/v1/auth/refresh,/api/v1/auth/logout");
@@ -32,8 +32,8 @@ class DeploymentProfilesTests {
                         assertThat(environment.getProperty("spring.cloud.gateway.server.webflux.httpclient.response-timeout"))
                                 .isEqualTo("10s");
                     }));
-            assertThat(server.requests()).contains("/polaris/dev", "/polaris/prod");
-            assertThat(server.requests()).allMatch(path -> path.startsWith("/polaris/"));
+            assertThat(server.requests()).contains("/gateway/dev", "/gateway/prod");
+            assertThat(server.requests()).allMatch(path -> path.startsWith("/gateway/"));
         }
     }
 

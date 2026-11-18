@@ -1,6 +1,6 @@
 spring:
   application:
-    name: polaris
+    name: gateway
   cloud:
     config:
       enabled: false

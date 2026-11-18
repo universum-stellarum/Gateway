@@ -56,7 +56,7 @@ public class SecurityConfig {
     }
 
     /**
-     * Valida o access token localmente, com a chave pública do JWKS do Antares.
+     * Valida o access token localmente, com a chave pública do JWKS do identity.
      * Além da assinatura, expiração e issuer, exige que o token tenha este gateway
      * na claim "aud", para que um token emitido para outro público não seja aceito.
      */

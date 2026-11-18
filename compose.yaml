@@ -1,7 +1,7 @@
-name: universum-polaris-${APP_ENV}
+name: universum-gateway-${APP_ENV}
 
 services:
-  polaris:
+  gateway:
     build: .
     restart: unless-stopped
     init: true
@@ -23,7 +23,7 @@ services:
 
 networks:
   # Create universum-dev and universum-prod once on the server. Each independent service
-  # joins its environment's network; Antares must register the alias "antares".
+  # joins its environment's network; identity must register the alias "identity".
   services:
     external: true
     name: universum-${APP_ENV}
