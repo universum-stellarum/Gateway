@@ -86,9 +86,9 @@ class GatewayApplicationTests {
         int before = IDENTITY_REQUESTS.get();
         client.get().uri("/identity/api/v1/users/me").exchange().expectStatus().isUnauthorized();
         for (String invalid : new String[]{
-                token("https://development.coeur.app.br", Instant.now().minusSeconds(3600), SIGNING_KEY),
-                token("https://production.coeur.app.br", Instant.now().plusSeconds(900), SIGNING_KEY),
-                token("https://development.coeur.app.br", Instant.now().plusSeconds(900), key()),
+                token("https://development.universum.api.br", Instant.now().minusSeconds(3600), SIGNING_KEY),
+                token("https://production.universum.api.br", Instant.now().plusSeconds(900), SIGNING_KEY),
+                token("https://development.universum.api.br", Instant.now().plusSeconds(900), key()),
                 UUID.randomUUID().toString()}) {
             client.get().uri("/identity/api/v1/users/me").headers(headers -> headers.setBearerAuth(invalid))
                     .exchange().expectStatus().isUnauthorized();
@@ -111,7 +111,7 @@ class GatewayApplicationTests {
 
     @Test
     void validJwtIsVerifiedThroughJwksAndForwardedUnchangedToTheCorrectService() throws Exception {
-        String accessToken = token("https://development.coeur.app.br", Instant.now().plusSeconds(900), SIGNING_KEY);
+        String accessToken = token("https://development.universum.api.br", Instant.now().plusSeconds(900), SIGNING_KEY);
         client.get().uri("/identity/api/v1/users/me?include=profile")
                 .headers(headers -> headers.setBearerAuth(accessToken))
                 .exchange().expectStatus().isOk()
@@ -128,21 +128,21 @@ class GatewayApplicationTests {
     @Test
     void corsAllowsConfiguredOriginAndAuthorizationHeaderWithoutDuplicateResponseHeaders() throws Exception {
         client.options().uri("/identity/api/v1/auth/refresh")
-                .header(HttpHeaders.ORIGIN, "https://development.coeur.app.br")
+                .header(HttpHeaders.ORIGIN, "https://development.universum.api.br")
                 .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")
                 .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "authorization,content-type")
                 .exchange().expectStatus().isOk()
-                .expectHeader().valueEquals(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://development.coeur.app.br");
+                .expectHeader().valueEquals(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://development.universum.api.br");
         client.options().uri("/identity/api/v1/users/me")
                 .header(HttpHeaders.ORIGIN, "https://untrusted.example")
                 .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")
                 .exchange().expectStatus().isForbidden();
-        String accessToken = token("https://development.coeur.app.br", Instant.now().plusSeconds(900), SIGNING_KEY);
+        String accessToken = token("https://development.universum.api.br", Instant.now().plusSeconds(900), SIGNING_KEY);
         client.get().uri("/identity/api/v1/users/me")
                 .headers(headers -> headers.setBearerAuth(accessToken))
-                .header(HttpHeaders.ORIGIN, "https://development.coeur.app.br")
+                .header(HttpHeaders.ORIGIN, "https://development.universum.api.br")
                 .exchange().expectStatus().isOk()
-                .expectHeader().valueEquals(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://development.coeur.app.br");
+                .expectHeader().valueEquals(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://development.universum.api.br");
     }
 
     @Test
@@ -151,14 +151,14 @@ class GatewayApplicationTests {
         client.get().uri("/.well-known/jwks.json").exchange().expectStatus().isOk()
                 .expectBody().jsonPath("$.keys[0].kid").isEqualTo(SIGNING_KEY.getKeyID())
                 .jsonPath("$.keys[0].d").doesNotExist();
-        String accessToken = token("https://development.coeur.app.br", Instant.now().plusSeconds(900), SIGNING_KEY);
+        String accessToken = token("https://development.universum.api.br", Instant.now().plusSeconds(900), SIGNING_KEY);
         client.get().uri("/actuator/env").headers(headers -> headers.setBearerAuth(accessToken))
                 .exchange().expectStatus().isForbidden();
     }
 
     @Test
     void serviceErrorStatusAndBodyArePreserved() throws Exception {
-        String accessToken = token("https://development.coeur.app.br", Instant.now().plusSeconds(900), SIGNING_KEY);
+        String accessToken = token("https://development.universum.api.br", Instant.now().plusSeconds(900), SIGNING_KEY);
         client.get().uri("/identity/api/v1/auth/failure").headers(headers -> headers.setBearerAuth(accessToken))
                 .exchange().expectStatus().isBadRequest().expectBody().jsonPath("$.detail").isEqualTo("Invalid refresh token.");
     }
@@ -173,7 +173,7 @@ class GatewayApplicationTests {
 
     private static String tokenForAudience(String audience, Instant expiresAt, RSAKey key) throws Exception {
         var jwt = new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(key.getKeyID()).build(),
-                new JWTClaimsSet.Builder().issuer("https://development.coeur.app.br").audience(audience)
+                new JWTClaimsSet.Builder().issuer("https://development.universum.api.br").audience(audience)
                         .subject(UUID.randomUUID().toString())
                         .issueTime(Date.from(Instant.now().minusSeconds(7200)))
                         .expirationTime(Date.from(expiresAt)).build());
@@ -205,7 +205,7 @@ class GatewayApplicationTests {
                         .sendString(Mono.just("{\"detail\":\"Invalid refresh token.\"}"));
             }
             return response.header("Content-Type", "application/json")
-                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://development.coeur.app.br")
+                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://development.universum.api.br")
                     .sendString(request.receive().asString().defaultIfEmpty("").map(body ->
                             JSONObjectUtils.toJSONString(Map.of("upstream", name, "path", request.uri(),
                                     "authorization", request.requestHeaders().get(HttpHeaders.AUTHORIZATION, ""),

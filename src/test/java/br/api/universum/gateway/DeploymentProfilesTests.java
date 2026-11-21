@@ -11,7 +11,7 @@ class DeploymentProfilesTests {
     @Test
     void loadsEachEnvironmentFromConfigServer() throws Exception {
         try (var server = new ConfigServerFixture()) {
-            Map.of("prod", "https://production.coeur.app.br", "dev", "https://development.coeur.app.br")
+            Map.of("prod", "https://production.universum.api.br", "dev", "https://development.universum.api.br")
                     .forEach((profile, issuer) -> runner(profile, server.url()).run(context -> {
                         assertThat(context).hasNotFailed();
                         var environment = context.getEnvironment();

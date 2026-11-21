@@ -17,8 +17,8 @@ por `APP_ENV` e import obrigatório do Config Server.
 
 | `APP_ENV` | Configuração consultada | Domínio público | Rede interna |
 | --- | --- | --- | --- |
-| `dev` | `http://config-server.service.internal/polaris/dev` | `development.coeur.app.br` | `universum-dev` |
-| `prod` | `http://config-server.service.internal/polaris/prod` | `production.coeur.app.br` | `universum-prod` |
+| `dev` | `http://config-server.service.internal/polaris/dev` | `development.universum.api.br` | `universum-dev` |
+| `prod` | `http://config-server.service.internal/polaris/prod` | `production.universum.api.br` | `universum-prod` |
 
 `src/main/resources/application.yaml` contém somente o bootstrap: nome `polaris`, perfil
 e endereço do Config Server. Porta, URLs do Antares e JWKS, emissor JWT, endpoints POST
