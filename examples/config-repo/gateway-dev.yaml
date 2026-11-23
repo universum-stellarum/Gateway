@@ -7,7 +7,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://development.universum.api.br
-          jwk-set-uri: ${universum.services.identity.service}/.well-known/jwks.json
+          jwk-set-uri: ${gateway.routes.identity}/.well-known/jwks.json
   cloud:
     gateway:
       server:
@@ -17,6 +17,13 @@ spring:
             response-timeout: 10s
 
 gateway:
+  # Destino de cada rota: alias do container na rede Docker do ambiente. Só o gateway usa esses
+  # endereços; os serviços chamam uns aos outros por universum.services.*.url (URI pública).
+  routes:
+    identity: http://identity:8080
+    storage: http://storage:8080
+    notification: http://notification:8080
+    finance: http://finance:8080
   security:
     public-post-paths: /identity/api/v1/auth/login,/identity/api/v1/auth/refresh,/identity/api/v1/auth/logout
     jwt-audience: universum-api

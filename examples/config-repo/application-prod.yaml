@@ -1,14 +1,16 @@
-# Fonte única dos endereços dos microsserviços (alias na rede Docker do ambiente).
+# Endereços dos microsserviços, sempre pela URI pública: toda chamada entre serviços passa pelo
+# gateway (autenticação, logs, CORS). Os mesmos valores funcionam no servidor e na máquina local.
+# Cada serviço fica sob o próprio prefixo; só o JWKS do identity fica na raiz (/.well-known/jwks.json).
 universum:
   services:
     identity:
-      service: "http://identity:8080"
+      url: "https://production.universum.api.br/identity"
 
     storage:
-      service: "http://storage:8080"
+      url: "https://production.universum.api.br/storage"
 
     notification:
-      service: "http://notification:8080"
+      url: "https://production.universum.api.br/notification"
 
     finance:
-      service: "http://finance:8080"
+      url: "https://production.universum.api.br/finance"

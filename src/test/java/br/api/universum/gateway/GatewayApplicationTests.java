@@ -46,7 +46,7 @@ class GatewayApplicationTests {
 
     @DynamicPropertySource
     static void services(DynamicPropertyRegistry properties) {
-        properties.add("universum.services.identity.service", () -> "http://localhost:" + IDENTITY.port());
+        properties.add("gateway.routes.identity", () -> "http://localhost:" + IDENTITY.port());
         properties.add("spring.security.oauth2.resourceserver.jwt.jwk-set-uri",
                 () -> "http://localhost:" + IDENTITY.port() + "/.well-known/jwks.json");
     }

@@ -20,8 +20,12 @@ class DeploymentProfilesTests {
                         assertThat(environment.getProperty("server.port")).isEqualTo("8080");
                         assertThat(environment.getProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri"))
                                 .isEqualTo(issuer);
-                        assertThat(environment.getProperty("universum.services.identity.service"))
+                        assertThat(environment.getProperty("gateway.routes.identity"))
                                 .isEqualTo("http://identity:8080");
+                        assertThat(environment.getProperty("universum.services.identity.url"))
+                                .isEqualTo(issuer + "/identity");
+                        assertThat(environment.getProperty("universum.services.storage.url"))
+                                .isEqualTo(issuer + "/storage");
                         assertThat(environment.getProperty("spring.security.oauth2.resourceserver.jwt.jwk-set-uri"))
                                 .isEqualTo("http://identity:8080/.well-known/jwks.json");
                         assertThat(environment.getProperty("gateway.cors.allowed-origins")).isEqualTo(issuer);

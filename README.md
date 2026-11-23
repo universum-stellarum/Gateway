@@ -67,21 +67,22 @@ a aplicação não os carrega como fallback local.
 
 ## Comunicação por aliases de rede
 
-O Polaris e o Antares de cada ambiente devem entrar na mesma rede Docker.
-O Compose do Antares já declara o alias `antares`, usado pelos YAMLs remotos:
-
-Os endereços dos serviços não ficam no YAML do gateway: vêm do `application-<perfil>.yaml`
-compartilhado, que o config server entrega junto com `gateway-<perfil>.yaml`.
-Em `dev` e `prod`, `service` é o alias interno da rede Docker; no perfil `local` é a URI pública:
+O gateway e os serviços de cada ambiente devem entrar na mesma rede Docker. O gateway é o
+único que usa os aliases dos containers: cada rota aponta para o seu em `gateway-<perfil>.yaml`.
 
 ```yaml
-universum:
-  services:
-    identity:
-      service: "http://identity:8080"
+gateway:
+  routes:
+    identity: http://identity:8080
+    storage: http://storage:8080
 ```
 
-O JWKS usa `${universum.services.identity.service}/.well-known/jwks.json`.
+O JWKS usa `${gateway.routes.identity}/.well-known/jwks.json`.
+
+Os serviços nunca chamam uns aos outros pelo alias: usam a URI pública de
+`universum.services.<serviço>.url`, definida no `application-<perfil>.yaml` compartilhado
+(por exemplo `https://development.universum.api.br/storage`), para que toda chamada passe
+pelo gateway. Os mesmos valores funcionam no servidor e na máquina local.
 O alias resolve para a instância de desenvolvimento em `universum-dev` e para a instância
 de produção em `universum-prod`. Mantenha cada instância somente na rede do seu ambiente.
 Os nomes de containers gerados pelo Dokploy podem mudar; as URLs usam o alias estável.

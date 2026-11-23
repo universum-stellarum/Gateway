@@ -10,16 +10,11 @@ spring:
         jwt:
           issuer-uri: https://development.universum.api.br
 
-universum:
-  services:
-    storage:
-      service: http://localhost:1
-    notification:
-      service: http://localhost:1
-    finance:
-      service: http://localhost:1
-
 gateway:
+  routes:
+    storage: http://localhost:1
+    notification: http://localhost:1
+    finance: http://localhost:1
   security:
     public-post-paths: /identity/api/v1/auth/login,/identity/api/v1/auth/refresh,/identity/api/v1/auth/logout
     jwt-audience: universum-api
