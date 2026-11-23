@@ -21,8 +21,8 @@ public class GatewayConfig {
                         .path(
                                 "/identity/api/v1/auth/**",
                                 "/identity/api/v1/users/**",
-                                "/.well-known/jwks.json",
-                                "/healthz"
+                                "/identity/amiworking",
+                                "/.well-known/jwks.json"
                         )
                         .filters(
                                 filters -> filters.dedupeResponseHeader(
