@@ -20,7 +20,7 @@ class DeploymentProfilesTests {
                         assertThat(environment.getProperty("server.port")).isEqualTo("8080");
                         assertThat(environment.getProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri"))
                                 .isEqualTo(issuer);
-                        assertThat(environment.getProperty("gateway.services.identity-url"))
+                        assertThat(environment.getProperty("universum.services.identity.service"))
                                 .isEqualTo("http://identity:8080");
                         assertThat(environment.getProperty("spring.security.oauth2.resourceserver.jwt.jwk-set-uri"))
                                 .isEqualTo("http://identity:8080/.well-known/jwks.json");

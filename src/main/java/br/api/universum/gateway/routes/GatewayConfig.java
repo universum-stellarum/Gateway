@@ -12,10 +12,10 @@ public class GatewayConfig {
     @Bean
     public RouteLocator routes(
             RouteLocatorBuilder builder,
-            @Value("${gateway.services.identity-url}") String identityUrl,
-            @Value("${gateway.services.storage-url}") String storageUrl,
-            @Value("${gateway.services.notification-url}") String notificationUrl,
-            @Value("${gateway.services.finance-url}") String financeUrl) {
+            @Value("${universum.services.identity.service}") String identityUrl,
+            @Value("${universum.services.storage.service}") String storageUrl,
+            @Value("${universum.services.notification.service}") String notificationUrl,
+            @Value("${universum.services.finance.service}") String financeUrl) {
         return builder.routes()
                 .route("identity", route -> route
                         .path(

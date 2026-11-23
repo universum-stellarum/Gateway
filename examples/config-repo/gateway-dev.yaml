@@ -7,7 +7,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://development.universum.api.br
-          jwk-set-uri: http://identity:8080/.well-known/jwks.json
+          jwk-set-uri: ${universum.services.identity.service}/.well-known/jwks.json
   cloud:
     gateway:
       server:
@@ -17,11 +17,6 @@ spring:
             response-timeout: 10s
 
 gateway:
-  services:
-    identity-url: http://identity:8080
-    storage-url: http://storage:8080
-    notification-url: http://notification:8080
-    finance-url: http://finance:8080
   security:
     public-post-paths: /identity/api/v1/auth/login,/identity/api/v1/auth/refresh,/identity/api/v1/auth/logout
     jwt-audience: universum-api

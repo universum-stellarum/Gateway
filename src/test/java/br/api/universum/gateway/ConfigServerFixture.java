@@ -18,14 +18,10 @@ final class ConfigServerFixture implements AutoCloseable {
     private final DisposableServer server;
 
     ConfigServerFixture() throws IOException {
-        Map<String, Map<String, Object>> profiles = new HashMap<>();
+        // Como o config server real: primeiro o arquivo do serviço, depois o application compartilhado.
+        Map<String, List<Map<String, Object>>> profiles = new HashMap<>();
         for (String profile : List.of("dev", "prod")) {
-            var resource = new FileSystemResource("examples/config-repo/gateway-" + profile + ".yaml");
-            var source = new YamlPropertySourceLoader().load(profile, resource).getFirst();
-            Map<String, Object> properties = new HashMap<>();
-            ((Map<?, ?>) source.getSource()).keySet()
-                    .forEach(key -> properties.put(key.toString(), source.getProperty(key.toString())));
-            profiles.put(profile, properties);
+            profiles.put(profile, List.of(load("gateway-" + profile + ".yaml"), load("application-" + profile + ".yaml")));
         }
         server = HttpServer.create().host("127.0.0.1").port(0).handle((request, response) -> {
             requests.add(request.uri());
@@ -34,13 +30,20 @@ final class ConfigServerFixture implements AutoCloseable {
                 return response.status(404).send();
             }
             String profile = path[2];
-            var properties = profiles.get(profile);
-            var sources = properties == null ? List.of() : List.of(Map.of(
-                    "name", "gateway-" + profile + ".yaml", "source", properties));
+            var sources = profiles.getOrDefault(profile, List.of());
             String body = JSONObjectUtils.toJSONString(Map.of(
                     "name", "gateway", "profiles", List.of(profile), "propertySources", sources));
             return response.header("Content-Type", "application/json").sendString(Mono.just(body));
         }).bindNow();
+    }
+
+    private static Map<String, Object> load(String file) throws IOException {
+        var resource = new FileSystemResource("examples/config-repo/" + file);
+        var source = new YamlPropertySourceLoader().load(file, resource).getFirst();
+        Map<String, Object> properties = new HashMap<>();
+        ((Map<?, ?>) source.getSource()).keySet()
+                .forEach(key -> properties.put(key.toString(), source.getProperty(key.toString())));
+        return Map.of("name", file, "source", properties);
     }
 
     String url() {

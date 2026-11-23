@@ -1,0 +1,14 @@
+# Fonte única dos endereços dos microsserviços (alias na rede Docker do ambiente).
+universum:
+  services:
+    identity:
+      service: "http://identity:8080"
+
+    storage:
+      service: "http://storage:8080"
+
+    notification:
+      service: "http://notification:8080"
+
+    finance:
+      service: "http://finance:8080"
