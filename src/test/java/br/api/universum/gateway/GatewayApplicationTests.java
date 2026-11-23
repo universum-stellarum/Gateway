@@ -126,7 +126,7 @@ class GatewayApplicationTests {
     }
 
     @Test
-    void corsAllowsConfiguredOriginAndAuthorizationHeaderWithoutDuplicateResponseHeaders() throws Exception {
+    void corsIsAnsweredByTheGatewayForTheConfiguredOriginOnly() throws Exception {
         client.options().uri("/identity/api/v1/auth/refresh")
                 .header(HttpHeaders.ORIGIN, "https://development.universum.api.br")
                 .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")
@@ -216,7 +216,6 @@ class GatewayApplicationTests {
                         .sendString(Mono.just("{\"detail\":\"Invalid refresh token.\"}"));
             }
             return response.header("Content-Type", "application/json")
-                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://development.universum.api.br")
                     .sendString(request.receive().asString().defaultIfEmpty("").map(body ->
                             JSONObjectUtils.toJSONString(Map.of("upstream", name, "path", request.uri(),
                                     "authorization", request.requestHeaders().get(HttpHeaders.AUTHORIZATION, ""),

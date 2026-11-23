@@ -24,12 +24,6 @@ public class GatewayConfig {
                                 "/identity/amiworking",
                                 "/.well-known/jwks.json"
                         )
-                        .filters(
-                                filters -> filters.dedupeResponseHeader(
-                                        "Access-Control-Allow-Origin Access-Control-Allow-Credentials",
-                                        "RETAIN_FIRST"
-                                )
-                        )
                         .uri(identityUrl)
                 )
                 // Serviços fictícios para estudo: /<serviço>/... vira /... no serviço de destino.
