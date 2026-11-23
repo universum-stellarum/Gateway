@@ -17,11 +17,12 @@ por `APP_ENV` e import obrigatório do Config Server.
 
 | `APP_ENV` | Configuração consultada | Domínio público | Rede interna |
 | --- | --- | --- | --- |
-| `dev` | `http://config-server.service.internal/polaris/dev` | `development.universum.api.br` | `universum-dev` |
-| `prod` | `http://config-server.service.internal/polaris/prod` | `production.universum.api.br` | `universum-prod` |
+| `dev` | `http://config-server.service.internal/gateway/dev/dev` (branch `dev`) | `development.universum.api.br` | `universum-dev` |
+| `prod` | `http://config-server.service.internal/gateway/prod/prod` (branch `prod`) | `production.universum.api.br` | `universum-prod` |
 
-`src/main/resources/application.yaml` contém somente o bootstrap: nome `polaris`, perfil
-e endereço do Config Server. Porta, URLs do Antares e JWKS, emissor JWT, endpoints POST
+`src/main/resources/application.yaml` contém somente o bootstrap: nome `gateway`, perfil
+e endereço do Config Server. O perfil também escolhe a branch do repositório `configurations`
+(`spring.cloud.config.label`): cada ambiente tem a sua, `dev` ou `prod`. Porta, URLs do Antares e JWKS, emissor JWT, endpoints POST
 públicos, origens CORS e timeouts HTTP vêm do YAML remoto. Não há perfil padrão de produção.
 
 Para iniciar, defina no IntelliJ ou no Environment do Dokploy:
@@ -36,8 +37,8 @@ estar no ambiente do processo (Environment no Dokploy ou na configuração de ex
 
 Defina `CONFIG_SERVER_URL` com a URL base, como `http://config-server.service.internal`
 ou `http://localhost:8888` para um servidor local.
-Não inclua `/polaris/dev` ou `/polaris/prod` nessa variável:
-o cliente Spring monta o caminho usando o nome da aplicação e o perfil.
+Não inclua `/gateway/dev/dev` ou `/gateway/prod/prod` nessa variável:
+o cliente Spring monta o caminho usando o nome da aplicação, o perfil e a label.
 O hostname deve resolver e estar acessível a partir do processo/container do Polaris.
 
 O import remoto não usa `optional:`. Se o servidor estiver indisponível, a inicialização
@@ -46,10 +47,13 @@ não há atualização automática por Cloud Bus ou endpoint de refresh.
 
 ## Arquivos para o repositório de secrets
 
-Copie estes arquivos para a raiz do repositório consultado pelo Config Server:
+Cada pasta de `examples/config-repo` corresponde a uma branch do repositório `configurations`;
+copie os arquivos para a raiz da branch de mesmo nome:
 
-- [polaris-dev.yaml](examples/config-repo/polaris-dev.yaml)
-- [polaris-prod.yaml](examples/config-repo/polaris-prod.yaml)
+- branch `dev`: [gateway-dev.yaml](examples/config-repo/dev/gateway-dev.yaml) e
+  [application-dev.yaml](examples/config-repo/dev/application-dev.yaml)
+- branch `prod`: [gateway-prod.yaml](examples/config-repo/prod/gateway-prod.yaml) e
+  [application-prod.yaml](examples/config-repo/prod/application-prod.yaml)
 
 Eles contêm valores completos, sem depender das antigas variáveis `SERVER_PORT`,
 `IDENTITY_URL`, `JWT_JWK_SET_URI`, `AUTH_PUBLIC_POST_PATHS` e `CORS_ALLOWED_ORIGINS`.
@@ -96,7 +100,7 @@ docker network create universum-dev
 docker network create universum-prod
 ```
 
-1. Publique `polaris-dev.yaml` e `polaris-prod.yaml` no repositório de secrets antes do deploy.
+1. Publique `gateway-dev.yaml` na branch `dev` e `gateway-prod.yaml` na branch `prod` do repositório `configurations` antes do deploy.
 2. Crie uma aplicação Docker Compose do Polaris por ambiente usando [compose.yaml](compose.yaml).
 3. Defina `APP_ENV=dev` ou `APP_ENV=prod` e `CONFIG_SERVER_URL=http://config-server.service.internal`
    no Environment e remova as antigas variáveis de configuração do gateway.
@@ -138,7 +142,7 @@ docker build -t universum/polaris:validation .
 
 No Windows, use `mvnw.cmd` para os comandos Maven.
 Os testes de configuração usam um servidor HTTP local com o contrato do Config Server,
-servindo os dois YAMLs de `examples/config-repo`, e verificam a seleção de ambiente e a
+servindo os YAMLs de `examples/config-repo/{dev,prod}` como as branches de mesmo nome, e verificam a seleção de ambiente e a
 falha quando o servidor está indisponível. Os testes de rotas usam configuração isolada,
 um upstream HTTP de teste e JWTs reais. Não dependem do Config Server ou Antares externos.
 

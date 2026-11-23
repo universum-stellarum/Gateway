@@ -18,21 +18,25 @@ final class ConfigServerFixture implements AutoCloseable {
     private final DisposableServer server;
 
     ConfigServerFixture() throws IOException {
-        // Como o config server real: primeiro o arquivo do serviço, depois o application compartilhado.
+        // Como o config server real: cada pasta é uma branch do configurations (dev, prod), e a resposta
+        // traz primeiro o arquivo do serviço, depois o application compartilhado.
         Map<String, List<Map<String, Object>>> profiles = new HashMap<>();
         for (String profile : List.of("dev", "prod")) {
-            profiles.put(profile, List.of(load("gateway-" + profile + ".yaml"), load("application-" + profile + ".yaml")));
+            profiles.put(profile, List.of(
+                    load(profile + "/gateway-" + profile + ".yaml"), load(profile + "/application-" + profile + ".yaml")));
         }
         server = HttpServer.create().host("127.0.0.1").port(0).handle((request, response) -> {
             requests.add(request.uri());
+            // /gateway/{perfil}/{label}: cada ambiente tem sua branch, com o mesmo nome do perfil.
             String[] path = request.uri().split("/");
-            if (path.length != 3 || !path[1].equals("gateway")) {
+            if (path.length != 4 || !path[1].equals("gateway") || !path[2].equals(path[3])) {
                 return response.status(404).send();
             }
             String profile = path[2];
             var sources = profiles.getOrDefault(profile, List.of());
             String body = JSONObjectUtils.toJSONString(Map.of(
-                    "name", "gateway", "profiles", List.of(profile), "propertySources", sources));
+                    "name", "gateway", "profiles", List.of(profile), "label", profile,
+                    "propertySources", sources));
             return response.header("Content-Type", "application/json").sendString(Mono.just(body));
         }).bindNow();
     }

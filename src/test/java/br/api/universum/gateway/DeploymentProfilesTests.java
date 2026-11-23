@@ -36,7 +36,7 @@ class DeploymentProfilesTests {
                         assertThat(environment.getProperty("spring.cloud.gateway.server.webflux.httpclient.response-timeout"))
                                 .isEqualTo("10s");
                     }));
-            assertThat(server.requests()).contains("/gateway/dev", "/gateway/prod");
+            assertThat(server.requests()).contains("/gateway/dev/dev", "/gateway/prod/prod");
             assertThat(server.requests()).allMatch(path -> path.startsWith("/gateway/"));
         }
     }
