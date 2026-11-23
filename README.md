@@ -31,9 +31,8 @@ APP_ENV=dev
 CONFIG_SERVER_URL=http://config-server.service.internal
 ```
 
-Para produção, use `APP_ENV=prod`. Na execução local, também é possível copiar
-[.env.example](.env.example) para `.env`; o Spring importa esse arquivo opcionalmente.
-Arquivos `.env` privados são ignorados pelo Git.
+Para produção, use `APP_ENV=prod`. A aplicação não lê arquivos `.env`: as variáveis precisam
+estar no ambiente do processo (Environment no Dokploy ou na configuração de execução do IntelliJ).
 
 Defina `CONFIG_SERVER_URL` com a URL base, como `http://config-server.service.internal`
 ou `http://localhost:8888` para um servidor local.
