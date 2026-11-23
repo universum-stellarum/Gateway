@@ -37,7 +37,7 @@ public class SecurityConfig {
         return statelessApi(http)
                 .securityMatcher(new OrServerWebExchangeMatcher(
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, publicPostPaths),
-                        ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, "/.well-known/jwks.json")))
+                        ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, "/.well-known/jwks.json", "/healthz")))
                 .authorizeExchange(exchange -> exchange.anyExchange().permitAll())
                 .build();
     }

@@ -157,6 +157,17 @@ class GatewayApplicationTests {
     }
 
     @Test
+    void healthzIsPublicAndRoutedToIdentityEvenWithAStaleToken() {
+        for (String authorization : new String[]{null, "Bearer expired-access-token"}) {
+            client.get().uri("/healthz")
+                    .headers(headers -> { if (authorization != null) headers.set(HttpHeaders.AUTHORIZATION, authorization); })
+                    .exchange().expectStatus().isOk()
+                    .expectBody().jsonPath("$.upstream").isEqualTo("identity")
+                    .jsonPath("$.path").isEqualTo("/healthz");
+        }
+    }
+
+    @Test
     void serviceErrorStatusAndBodyArePreserved() throws Exception {
         String accessToken = token("https://development.universum.api.br", Instant.now().plusSeconds(900), SIGNING_KEY);
         client.get().uri("/identity/api/v1/auth/failure").headers(headers -> headers.setBearerAuth(accessToken))
