@@ -24,10 +24,15 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+/**
+ * Segurança do gateway, o único ponto de entrada da API. Valida o access token de cada requisição
+ * antes de repassá-la aos serviços e cuida do CORS.
+ */
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
+    /** Rotas públicas (login, refresh, logout, JWKS): passam sem validar token nenhum. */
     @Bean
     @Order(1)
     public SecurityWebFilterChain authenticationSecurityWebFilterChain(
@@ -42,6 +47,7 @@ public class SecurityConfig {
                 .build();
     }
 
+    /** Todo o resto exige um access token válido; o actuator, fora o health, fica fechado. */
     @Bean
     @Order(2)
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -64,12 +70,17 @@ public class SecurityConfig {
     public ReactiveJwtDecoder jwtDecoder(
             @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}") String jwkSetUri,
             @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}") String issuer,
-            @Value("${gateway.security.jwt-audience}") String audience) {
+            @Value("${gateway.security.jwt-audience}") String audience
+    ) {
         NimbusReactiveJwtDecoder decoder = NimbusReactiveJwtDecoder.withJwkSetUri(jwkSetUri).build();
+
         decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
                 JwtValidators.createDefaultWithIssuer(issuer),
-                new JwtClaimValidator<List<String>>("aud",
-                        aud -> aud != null && aud.contains(audience))));
+                new JwtClaimValidator<List<String>>(
+                        "aud",
+                        aud -> aud.contains(audience)
+                )
+        ));
         return decoder;
     }
 
